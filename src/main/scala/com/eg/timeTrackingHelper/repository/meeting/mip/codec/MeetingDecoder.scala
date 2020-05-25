@@ -51,11 +51,7 @@ private[codec] trait MeetingDecoder
     getRequiredField[String](
       c.downField("subject").focus,
       "subject"
-    ).map(subject =>
-      if (subject.isBlank)
-        scala.None else
-        subject.some
-    )
+    ).map(convertSubject)
 
   private def getIsTakePlace(c: HCursor): Result[Boolean] =
     for {
@@ -81,6 +77,9 @@ private[codec] trait MeetingDecoder
       case _ if isCancelled => false
       case _ => true
     }
+
+  private def convertSubject(subject: String): Option[String] =
+    if (subject.isBlank) scala.None else subject.some
 
   private def getStartLocalDateTime(c: HCursor): Result[LocalDateTime] =
     getLocalDateTime(c.downField("start"), "start")
