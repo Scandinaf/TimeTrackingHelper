@@ -48,7 +48,14 @@ private[codec] trait MeetingDecoder
   implicit val resMeetingsDecoder = jsonOf[IO, List[Meeting]]
 
   private def getSubject(c: HCursor): Result[Option[String]] =
-    c.downField("subject").focus.flatMap(_.asString).asRight
+    getRequiredField[String](
+      c.downField("subject").focus,
+      "subject"
+    ).map(subject =>
+      if (subject.isBlank)
+        scala.None else
+        subject.some
+    )
 
   private def getIsTakePlace(c: HCursor): Result[Boolean] =
     for {

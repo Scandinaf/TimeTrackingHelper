@@ -37,20 +37,20 @@ class MeetingServiceSpec extends AnyFlatSpec
   private val meetingService = MeetingService(meetingRepositoryMock, keywordMapping)
 
   "MeetingService.getTicketIdBySubject" should "return correctly ticketId based on letter subject" in {
-    meetingService.getTicketIdBySubject("A small discussion about test-2 and test-5".some) should be(TicketId(ticket1))
-    meetingService.getTicketIdBySubject("A small discussion about test-3".some) should be(TicketId(ticket1))
-    meetingService.getTicketIdBySubject("A small discussion about test-5 and test-2".some) should be(TicketId(ticket1))
-    meetingService.getTicketIdBySubject("A small discussion about test-4".some) should be(TicketId(ticket2))
+    meetingService.getTicketIdBySubject("A small discussion about test-2 and test-5".some) should be(TicketId(ticket1).some)
+    meetingService.getTicketIdBySubject("A small discussion about test-3".some) should be(TicketId(ticket1).some)
+    meetingService.getTicketIdBySubject("A small discussion about test-5 and test-2".some) should be(TicketId(ticket1).some)
+    meetingService.getTicketIdBySubject("A small discussion about test-4".some) should be(TicketId(ticket2).some)
   }
 
   it should "return the ticket based on a partial match" in {
-    meetingService.getTicketIdBySubject("A small discussion about test-25".some) should be(TicketId(ticket1))
-    meetingService.getTicketIdBySubject("A small discussion about test-43".some) should be(TicketId(ticket2))
+    meetingService.getTicketIdBySubject("A small discussion about test-25".some) should be(TicketId(ticket1).some)
+    meetingService.getTicketIdBySubject("A small discussion about test-43".some) should be(TicketId(ticket2).some)
   }
 
   it should "return default ticketId" in {
-    meetingService.getTicketIdBySubject("A small discussion about vacations".some) should be(TicketId(defaultTicket))
-    meetingService.getTicketIdBySubject(None) should be(TicketId(defaultTicket))
+    meetingService.getTicketIdBySubject("A small discussion about vacations".some) should be(TicketId(defaultTicket).some)
+    meetingService.getTicketIdBySubject(None) should be(None)
   }
 
   "MeetingService.getLogEntityByMeeting" should "return LogEntity by Meeting" in {
@@ -73,7 +73,7 @@ class MeetingServiceSpec extends AnyFlatSpec
       ActivityType.Major,
       subject
     )
-    meetingService.getLogEntityByMeeting(meeting) should be(logEntity)
+    meetingService.getLogEntityByMeeting(meeting) should be(logEntity.some)
   }
 
   "MeetingService.getMeetingsLogEntity" should "return Map[LocalDate, List[WorklogEntity]] with upcoming meetings" in {

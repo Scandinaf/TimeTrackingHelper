@@ -2,5 +2,6 @@ package com.eg.timeTrackingHelper.configuration.model
 
 case class KeywordMapping(
                            defaultTicket: String,
-                           keywordMappingByTicket: Map[String, Set[String]]
+                           keywordMappingByTicket: Map[String, Set[String]],
+                           excludeKeywords: List[String] = List.empty,
                          )

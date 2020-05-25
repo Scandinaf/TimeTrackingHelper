@@ -22,7 +22,7 @@ object Converter extends StrictLogging {
     override def convert(a: Appointment): Either[ConvertException, Meeting] =
       Either.catchNonFatal {
         model.Meeting(
-          Option(a.getSubject),
+          convertSubject(a.getSubject),
           isTakePlace(a),
           a.getStart.toLocalDateTime,
           a.getEnd.toLocalDateTime,
@@ -38,6 +38,9 @@ object Converter extends StrictLogging {
         )
         UnexpectableBehaviourException(throwable)
       })
+
+    private def convertSubject(subject: String): Option[String] =
+      if (subject.isBlank) None else subject.some
 
     private def isTakePlace(a: Appointment): Boolean =
       !(a.getIsCancelled || a.getMyResponseType == MeetingResponseType.Decline)

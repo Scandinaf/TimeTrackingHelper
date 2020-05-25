@@ -2,6 +2,7 @@ package com.eg.timeTrackingHelper.service.meeting
 
 import java.time.LocalDate
 
+import cats.syntax.option._
 import cats.effect.IO
 import com.eg.timeTrackingHelper.configuration.model.KeywordMapping
 import com.eg.timeTrackingHelper.model.DatePeriod
@@ -20,30 +21,37 @@ private[service] class MeetingService(
                           ): IO[Map[LocalDate, List[WorklogEntity]]] =
     for {
       meetings <- meetingRepository.getTakePlaceMeetings(datePeriod)
-      logEntities <- IO(meetings.map(getLogEntityByMeeting))
+      logEntities <- IO(meetings.map(getLogEntityByMeeting).flatten)
       result <- IO(logEntities.groupBy(_.start.toLocalDate))
     } yield result
 
   protected[meeting] def getLogEntityByMeeting(
                                                 meeting: Meeting
-                                              ): WorklogEntity =
-    WorklogEntity(
-      meeting.start,
-      meeting.end,
-      getTicketIdBySubject(meeting.subject),
-      ActivityType.Major,
-      meeting.subject,
-    )
-
-  protected[meeting] def getTicketIdBySubject(subject: Option[String]): TicketId =
-    TicketId(
-      subject.flatMap(
-        subject =>
-          keywordMapping.keywordMappingByTicket.find(
-            tuple => tuple._2.exists(subject.contains(_))
-          )
+                                              ): Option[WorklogEntity] =
+    getTicketIdBySubject(meeting.subject)
+      .map(
+        WorklogEntity(
+          meeting.start,
+          meeting.end,
+          _,
+          ActivityType.Major,
+          meeting.subject,
+        )
       )
-        .map(_._1)
+
+  protected[meeting] def getTicketIdBySubject(
+                                               subjectOpt: Option[String]
+                                             ): Option[TicketId] =
+    subjectOpt.flatMap {
+      case subject if keywordMapping.excludeKeywords.exists(subject.contains(_)) => None
+      case subject => getTicketIdBySubject(subject).some
+    }
+
+  protected[meeting] def getTicketIdBySubject(subject: String): TicketId =
+    TicketId(
+      keywordMapping.keywordMappingByTicket.find(
+        tuple => tuple._2.exists(subject.contains(_))
+      ).map(_._1)
         .getOrElse(
           keywordMapping.defaultTicket
         )
