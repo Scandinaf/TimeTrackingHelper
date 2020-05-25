@@ -67,6 +67,8 @@
                       contentType : "application/json"
                   }).done(function( msg ) {
                     appendChangeLog(msg);
+                  }).fail(function(jqXHR, textStatus, errorThrown){
+                    appendChangeLog(jqXHR.responseText);
                   });
         }
 
