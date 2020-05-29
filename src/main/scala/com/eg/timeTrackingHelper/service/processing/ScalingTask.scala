@@ -10,7 +10,7 @@ private[processing] trait ScalingTask extends BaseTask {
   @tailrec
   final protected def scaling(state: WorkLogTransformationState): WorkLogTransformationState = {
     val scaleState = makeScaling(state)
-    if (scaleState.totalDuration < workHoursLimit)
+    if (state.payloads.nonEmpty && scaleState.totalDuration < workHoursLimit)
       scaling(scaleState)
     else scaleState
   }
