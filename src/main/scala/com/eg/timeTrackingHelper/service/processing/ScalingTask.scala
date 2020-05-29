@@ -3,8 +3,12 @@ package com.eg.timeTrackingHelper.service.processing
 import com.eg.timeTrackingHelper.configuration.ApplicationConfig.applicationSettings.{scaleFactor, workHoursLimit}
 import com.eg.timeTrackingHelper.service.chain.WorkLogTransformationChain.WorkLogTransformationState
 
+import scala.annotation.tailrec
+
 private[processing] trait ScalingTask extends BaseTask {
-  protected def scaling(state: WorkLogTransformationState): WorkLogTransformationState = {
+
+  @tailrec
+  final protected def scaling(state: WorkLogTransformationState): WorkLogTransformationState = {
     val scaleState = makeScaling(state)
     if (scaleState.totalDuration < workHoursLimit)
       scaling(scaleState)
