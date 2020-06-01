@@ -394,7 +394,7 @@ class TicketServiceSpec extends AnyFlatSpec
     val end = start.plusDays(1)
     val datePeriod = DatePeriod(start, end)
     val searchResults = SearchResults(
-      "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations".some,
       0,
       200,
       10,
@@ -624,7 +624,7 @@ class TicketServiceSpec extends AnyFlatSpec
 
   private def buildSearchResults(histories: List[(String, List[HistoryItem])]): SearchResults =
     SearchResults(
-      "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations".some,
       0,
       200,
       10,
