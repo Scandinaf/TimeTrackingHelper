@@ -1,13 +1,14 @@
 import Dependencies.{Test, _}
 
 name := "Time Tracking Helper"
-version := "0.1"
-scalaVersion := "2.12.10"
+version := "0.2.0"
+scalaVersion := "2.13.4"
 
-lazy val root = project.in(file("."))
+lazy val root = project
+  .in(file("."))
   .settings(
-    mainClass in(Compile, run) := Some("com.eg.timeTrackingHelper.Main"),
-    scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-language:postfixOps"),
+    mainClass in (Compile, run) := Some("com.eg.timeTrackingHelper.Main"),
+    scalacOptions ++= Seq("-language:postfixOps"),
     libraryDependencies ++=
       Seq(
         Cats.core,
@@ -27,8 +28,9 @@ lazy val root = project.in(file("."))
         Logging.logbackClassic,
         Logging.scalaLogging,
         Test.scalatest,
-        Test.mockito,
+        Test.mockito
       )
-  ).dependsOn(jira4s)
+  )
+  .dependsOn(jira4s)
 
 lazy val jira4s = RootProject(uri("https://github.com/Scandinaf/jira4s.git"))

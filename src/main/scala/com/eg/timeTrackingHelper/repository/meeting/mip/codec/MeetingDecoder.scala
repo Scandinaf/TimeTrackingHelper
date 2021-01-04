@@ -1,6 +1,6 @@
 package com.eg.timeTrackingHelper.repository.meeting.mip.codec
 
-import java.time.temporal.{ChronoUnit, TemporalUnit}
+import java.time.temporal.ChronoUnit
 import java.time.{Instant, LocalDateTime, ZoneId}
 import java.util.concurrent.TimeUnit
 
@@ -15,43 +15,36 @@ import cats.implicits._
 import scala.concurrent.duration.Duration
 
 private[codec] trait MeetingDecoder
-  extends ResponseStatusDecoder
+    extends ResponseStatusDecoder
     with InstantDecoder
     with JsonCodecHelper {
 
   implicit val meetingDecoder = new Decoder[Meeting] {
-    override def apply(c: HCursor): Result[Meeting] = for {
-      subject <- getSubject(c)
-      isTakePlace <- getIsTakePlace(c)
-      start <- getStartLocalDateTime(c)
-      end <- getEndLocalDateTime(c)
-    } yield Meeting(
-      subject,
-      isTakePlace,
-      start,
-      end,
-      Duration(
-        ChronoUnit.MINUTES.between(start, end),
-        TimeUnit.MINUTES
+    override def apply(c: HCursor): Result[Meeting] =
+      for {
+        subject <- getSubject(c)
+        isTakePlace <- getIsTakePlace(c)
+        start <- getStartLocalDateTime(c)
+        end <- getEndLocalDateTime(c)
+      } yield Meeting(
+        subject,
+        isTakePlace,
+        start,
+        end,
+        Duration(ChronoUnit.MINUTES.between(start, end), TimeUnit.MINUTES)
       )
-    )
   }
 
   implicit val meetingsDecoder = new Decoder[List[Meeting]] {
     override def apply(c: HCursor): Result[List[Meeting]] =
-      getRequiredField[List[Json]](
-        c.downField("value").focus,
-        "value"
-      ).flatMap(_.traverse(_.as[Meeting]))
+      getRequiredField[List[Json]](c.downField("value").focus, "value")
+        .flatMap(_.traverse(_.as[Meeting]))
   }
 
   implicit val resMeetingsDecoder = jsonOf[IO, List[Meeting]]
 
   private def getSubject(c: HCursor): Result[Option[String]] =
-    getRequiredField[String](
-      c.downField("subject").focus,
-      "subject"
-    ).map(convertSubject)
+    getRequiredField[String](c.downField("subject").focus, "subject").map(convertSubject)
 
   private def getIsTakePlace(c: HCursor): Result[Boolean] =
     for {
@@ -60,10 +53,7 @@ private[codec] trait MeetingDecoder
     } yield isTakePlace(isCancelled, responseStatus)
 
   private def getIsCancelled(c: HCursor): Result[Boolean] =
-    getRequiredField(
-      c.downField("isCancelled").focus,
-      "isCancelled"
-    )
+    getRequiredField(c.downField("isCancelled").focus, "isCancelled")
 
   private def getResponseStatus(c: HCursor): Result[ResponseStatus] =
     getRequiredField(
@@ -73,9 +63,9 @@ private[codec] trait MeetingDecoder
 
   private def isTakePlace(isCancelled: Boolean, responseStatus: ResponseStatus): Boolean =
     responseStatus match {
-      case Declined => false
+      case Declined         => false
       case _ if isCancelled => false
-      case _ => true
+      case _                => true
     }
 
   private def convertSubject(subject: String): Option[String] =
@@ -91,5 +81,8 @@ private[codec] trait MeetingDecoder
     for {
       dateTime <- getRequiredField[Instant](c.downField("dateTime").focus, s"$parent.dateTime")
       timeZone <- getRequiredField[ZoneId](c.downField("timeZone").focus, s"$parent.timeZone")
-    } yield dateTime.atZone(timeZone).withZoneSameInstant(DateTimeHelper.defaultZoneId).toLocalDateTime
+    } yield dateTime
+      .atZone(timeZone)
+      .withZoneSameInstant(DateTimeHelper.defaultZoneId)
+      .toLocalDateTime
 }

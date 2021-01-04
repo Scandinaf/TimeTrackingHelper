@@ -77,8 +77,8 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
     )
 
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 13500)),
       WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad(None, started, 15300)),
+      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 13500)),
     )
     buildWorkLogPayLoads(localDate, hierarchicalWorklog) should be(expected)
   }
@@ -99,8 +99,8 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
     )
 
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 6.hours.toSeconds.toInt)),
       WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad(None, started, 2.hours.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 6.hours.toSeconds.toInt)),
     )
     buildWorkLogPayLoads(
       localDate,
@@ -124,8 +124,8 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
     )
 
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 4.hours.toSeconds.toInt)),
       WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad(None, started, 4.hours.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 4.hours.toSeconds.toInt)),
     )
     buildWorkLogPayLoads(
       localDate,
@@ -156,14 +156,16 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
     )
 
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#3"), WorkLogPayLoad(None, started, 1.hours.toSeconds.toInt)),
-      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 3.hours.toSeconds.toInt)),
       WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad(None, started, 4.hours.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 3.hours.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#3"), WorkLogPayLoad(None, started, 1.hours.toSeconds.toInt)),
     )
-    buildWorkLogPayLoads(
+    val hierarchicalWorklog = toHierarchicalWorklogs(List(entity1, entity2, entity3))
+    val worklogPayloads = buildWorkLogPayLoads(
       localDate,
-      toHierarchicalWorklogs(List(entity1, entity2, entity3))
-    ) should be(expected)
+      hierarchicalWorklog
+    )
+    worklogPayloads should be(expected)
   }
 
   it should "correctly work with one major ticket" in {
@@ -208,8 +210,8 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
       minor = List.empty
     )
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 4.hour.toSeconds.toInt)),
-      WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad(None, started, 4.hour.toSeconds.toInt))
+      WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad(None, started, 4.hour.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 4.hour.toSeconds.toInt))
     )
     buildWorkLogPayLoads(localDate, hierarchicalWorklog) should be(expected)
   }
@@ -241,8 +243,8 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
       minor = List.empty
     )
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#3"), WorkLogPayLoad(None, started, 15.minutes.toSeconds.toInt)),
       WorklogPayloadWithTicket(TicketId("test#2"), WorkLogPayLoad(None, started, 465.minutes.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#3"), WorkLogPayLoad(None, started, 15.minutes.toSeconds.toInt)),
     )
     buildWorkLogPayLoads(localDate, hierarchicalWorklog) should be(expected)
   }
@@ -281,8 +283,8 @@ class WorklogPayloadBuilderSpec extends AnyFlatSpec
     )
 
     val expected = List(
-      WorklogPayloadWithTicket(TicketId("test#3"), WorkLogPayLoad(None, started, 30.minutes.toSeconds.toInt)),
       WorklogPayloadWithTicket(TicketId("test#1"), WorkLogPayLoad("Meeting".some, started, 15.minutes.toSeconds.toInt)),
+      WorklogPayloadWithTicket(TicketId("test#3"), WorkLogPayLoad(None, started, 30.minutes.toSeconds.toInt)),
     )
 
     merge(list) should be(expected)

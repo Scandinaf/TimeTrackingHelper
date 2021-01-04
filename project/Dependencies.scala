@@ -8,18 +8,18 @@ object Dependencies {
   }
 
   object Cats {
-    private val version = "2.0.0"
+    private val version = "2.3.1"
     val core = "org.typelevel" %% "cats-core" % version
     val effect = "org.typelevel" %% "cats-effect" % version
   }
 
   object FS2 {
-    private val version = "2.2.1"
+    private val version = "2.5.0"
     val core = "co.fs2" %% "fs2-core" % version
   }
 
   object Http4s {
-    private val version = "0.21.4"
+    private val version = "0.21.15"
     val server = "org.http4s" %% "http4s-blaze-server" % version
     val dsl = "org.http4s" %% "http4s-dsl" % version
     val client = "org.http4s" %% "http4s-blaze-client" % version
@@ -37,14 +37,14 @@ object Dependencies {
   }
 
   object Sttp {
-    private val version = "2.0.0-RC7"
+    private val version = "2.2.9"
     val sttpClient = "com.softwaremill.sttp.client" %% "core" % version
   }
 
   object Config {
-    private val typeSafeVersion = "1.4.0"
+    private val typeSafeVersion = "1.4.1"
     val typeSafe = "com.typesafe" % "config" % typeSafeVersion
-    private val pureConfigVersion = "0.12.2"
+    private val pureConfigVersion = "0.14.0"
     val pureConfig = "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
   }
 
@@ -61,9 +61,9 @@ object Dependencies {
   }
 
   object Test {
-    private val version = "3.1.0"
+    private val version = "3.2.3"
     val scalatest = "org.scalatest" %% "scalatest" % version % "test"
-    private val mockitoVersion = "1.11.2"
+    private val mockitoVersion = "1.16.2"
     val mockito = "org.mockito" %% "mockito-scala" % mockitoVersion % "test"
   }
 

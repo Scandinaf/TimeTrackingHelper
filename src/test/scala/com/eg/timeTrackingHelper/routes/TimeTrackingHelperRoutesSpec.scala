@@ -17,9 +17,10 @@ import org.scalatest.matchers.should.Matchers
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class TimeTrackingHelperRoutesSpec
-  extends AnyFlatSpec
+    extends AnyFlatSpec
     with Matchers
-    with MockitoSugar with BeforeAndAfterAll {
+    with MockitoSugar
+    with BeforeAndAfterAll {
 
   private val accessTokenRef = Ref.of[IO, Option[String]](None)
   private val accessToken = "asdsadadsasd123123asddas12312asdasd"
@@ -27,41 +28,28 @@ class TimeTrackingHelperRoutesSpec
   private val blocker = Blocker.liftExecutionContext(global)
   private implicit val contextShift = IO.contextShift(global)
 
-  override protected def beforeAll(): Unit =
-    when(timeTrackingService.logTime(
-      any[DatePeriod]
-    )).thenReturn(IO.unit)
+  override protected def beforeAll(): Unit = {
+    when(timeTrackingService.logTime(any[DatePeriod])).thenReturn(IO.unit)
+    ()
+  }
 
   "TimeTrackingHelperRoutes.installToken" should "process empty token correctly" in {
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper",
-      ).withEntity(
-        UrlForm("access_token" -> "")
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper")
+        .withEntity(UrlForm("access_token" -> "")),
       Status.BadRequest,
       "The access token cannot be empty.".some
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper",
-      ).withEntity(
-        UrlForm("not_access_token" -> accessToken)
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper")
+        .withEntity(UrlForm("not_access_token" -> accessToken)),
       Status.BadRequest,
       "The access token cannot be empty.".some
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper",
-      ).withEntity(
-        "{'test':'test'}"
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper").withEntity("{'test':'test'}"),
       Status.BadRequest,
       "The request body was malformed.".some
     )
@@ -69,13 +57,9 @@ class TimeTrackingHelperRoutesSpec
 
   it should "moved permanently to '/timeTrackingHelper/form'" in {
     val result = check[Unit](
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper",
-      ).withEntity(
-        UrlForm("access_token" -> accessToken)
-      ),
-      Status.MovedPermanently,
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper")
+        .withEntity(UrlForm("access_token" -> accessToken)),
+      Status.MovedPermanently
     )
 
     result._1.headers.find(_.is(Location)) shouldBe Location(uri"/timeTrackingHelper/form").some
@@ -83,85 +67,57 @@ class TimeTrackingHelperRoutesSpec
 
   "TimeTrackingHelperRoutes.PostTimeTrackingForm" should "process incorrect body correctly" in {
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        UrlForm("not_access_token" -> accessToken)
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity(UrlForm("not_access_token" -> accessToken)),
       Status.BadRequest,
       """There is no point in continuing because the token hasn't been installed.
-        |Please visit the next page 'GET /timeTrackingHelper/token'.""".stripMargin.some,
+        |Please visit the next page 'GET /timeTrackingHelper/token'.""".stripMargin.some
     )
 
     val correctAccessToken = Ref.of[IO, Option[String]](accessToken.some).some
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        UrlForm("not_access_token" -> accessToken)
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity(UrlForm("not_access_token" -> accessToken)),
       Status.BadRequest,
       "Invalid JSON".some,
       correctAccessToken
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        "{'asd' : 'asd'}"
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity("{'asd' : 'asd'}"),
       Status.BadRequest,
       "Invalid JSON".some,
       correctAccessToken
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        """{"asd" : "asd"}"""
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity("""{"asd" : "asd"}"""),
       Status.BadRequest,
       "The 'start' field is mandatory.".some,
       correctAccessToken
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        """{"start" : "2020-05-21"}"""
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity("""{"start" : "2020-05-21"}"""),
       Status.BadRequest,
       "The 'end' field is mandatory.".some,
       correctAccessToken
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        """{"start" : "2020-05-21", "end" : "123"}"""
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity("""{"start" : "2020-05-21", "end" : "123"}"""),
       Status.BadRequest,
       "The 'end' field contains incorrect data. Valid data example - 2019-11-03.".some,
       correctAccessToken
     )
 
     check(
-      Request(
-        method = Method.POST,
-        uri = uri"/timeTrackingHelper/form",
-      ).withEntity(
-        """{"start" : "2020-05-21", "end" : "2020-05-14"}"""
-      ),
+      Request(method = Method.POST, uri = uri"/timeTrackingHelper/form")
+        .withEntity("""{"start" : "2020-05-21", "end" : "2020-05-14"}"""),
       Status.BadRequest,
       """During the validation process, the following errors were detected:
         |The start cannot be less than the end!!!
@@ -171,13 +127,11 @@ class TimeTrackingHelperRoutesSpec
   }
 
   private def check[A](
-                        request: Request[IO],
-                        expectedStatus: Status,
-                        expectedBody: Option[A] = None,
-                        accessTokenOpt: Option[IO[Ref[IO, Option[String]]]] = None,
-                      )(
-                        implicit decoder: EntityDecoder[IO, A]
-                      ): (Response[IO], A) = {
+    request: Request[IO],
+    expectedStatus: Status,
+    expectedBody: Option[A] = None,
+    accessTokenOpt: Option[IO[Ref[IO, Option[String]]]] = None
+  )(implicit decoder: EntityDecoder[IO, A]): (Response[IO], A) = {
     val result = (for {
       accessToken <- accessTokenOpt.getOrElse(accessTokenRef)
       routes <- IO(TimeTrackingHelperRoutes(accessToken, blocker, timeTrackingService).routes)

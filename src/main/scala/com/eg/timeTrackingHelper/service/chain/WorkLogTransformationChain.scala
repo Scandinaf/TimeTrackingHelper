@@ -4,9 +4,9 @@ import com.eg.timeTrackingHelper.service.chain.WorkLogTransformationChain.WorkLo
 import com.eg.timeTrackingHelper.service.model.WorklogPayloadWithTicket
 
 class WorkLogTransformationChain(
-                                  limit: Int,
-                                  val tasks: List[WorkLogTransformationState => WorkLogTransformationState]
-                                ) extends Chain[WorkLogTransformationState] {
+  limit: Int,
+  val tasks: List[WorkLogTransformationState => WorkLogTransformationState]
+) extends Chain[WorkLogTransformationState] {
   override val initialState: WorkLogTransformationState = WorkLogTransformationState()
 
   override def canContinue(state: WorkLogTransformationState): Boolean =
@@ -16,16 +16,13 @@ class WorkLogTransformationChain(
 object WorkLogTransformationChain {
 
   case class WorkLogTransformationState(
-                                         payloads: List[WorklogPayloadWithTicket] = List.empty,
-                                         totalDuration: Int = 0
-                                       )
+    payloads: List[WorklogPayloadWithTicket] = List.empty,
+    totalDuration: Int = 0
+  )
 
   def apply(
-             limit: Int,
-             tasks: List[WorkLogTransformationState => WorkLogTransformationState]
-           ): WorkLogTransformationChain =
-    new WorkLogTransformationChain(
-      limit,
-      tasks,
-    )
+    limit: Int,
+    tasks: List[WorkLogTransformationState => WorkLogTransformationState]
+  ): WorkLogTransformationChain =
+    new WorkLogTransformationChain(limit, tasks)
 }

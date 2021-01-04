@@ -6,7 +6,7 @@ It is important to understand that this is only a tool and due to the fact that 
 (there are only two Outlook, Jira) are quite limited there is a possibility of discrepancies with reality, inaccuracies.
 
 ## Preparations
-* 12 openJDK and later.
+* 11 openJDK and later.
 * Configure the configuration for use. File - **application.conf**.
 
 ## How does this system work???
@@ -32,7 +32,8 @@ A few examples:
     2. sbt clean;compile;test
     
 ## Stack
-* Scala 2.12
+* Scala 2.13
+* Http4s
 * Cats
 * FS2
 * Sttp

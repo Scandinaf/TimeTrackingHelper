@@ -9,9 +9,6 @@ private[codec] trait InstantDecoder {
 
   implicit val instantDecoder = new Decoder[Instant] {
     override def apply(c: HCursor): Result[Instant] =
-      c.as[String].map(
-        v =>
-          Instant.parse(s"${v.substring(0, 22)}Z")
-      )
+      c.as[String].map(v => Instant.parse(s"${v.substring(0, 22)}Z"))
   }
 }

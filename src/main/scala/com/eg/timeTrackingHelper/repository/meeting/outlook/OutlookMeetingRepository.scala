@@ -13,7 +13,7 @@ import microsoft.exchange.webservices.data.core.service.item.Appointment
 import shapeless.syntax.std.product._
 
 private[meeting] class OutlookMeetingRepository(config: OutlookConfig)
-  extends MeetingRepository
+    extends MeetingRepository
     with OutlookExchangeService {
   override def getMeetings(datePeriod: DatePeriod): IO[List[Meeting]] =
     for {

@@ -6,16 +6,11 @@ private[chain] trait Chain[T] {
 
   def tasks: List[T => T]
 
-  def canContinue(
-                   state: T
-                 ): Boolean
+  def canContinue(state: T): Boolean
 
   def execute: T =
-    tasks.foldLeft(
-      initialState
-    )(
-      (state, function) =>
-        if (canContinue(state)) function(state)
-        else state
+    tasks.foldLeft(initialState)((state, function) =>
+      if (canContinue(state)) function(state)
+      else state
     )
 }

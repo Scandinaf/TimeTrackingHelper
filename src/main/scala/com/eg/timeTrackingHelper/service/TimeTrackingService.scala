@@ -16,13 +16,10 @@ import io.jvm.uuid._
 
 import scala.concurrent.duration._
 
-class TimeTrackingService(
-                           meetingService: MeetingService
-                         )(
-                           implicit val contextShift: ContextShift[IO],
-                           timer: Timer[IO]
-                         )
-  extends StrictLogging
+class TimeTrackingService(meetingService: MeetingService)(implicit
+  val contextShift: ContextShift[IO],
+  timer: Timer[IO]
+) extends StrictLogging
     with WorklogPayloadBuilder {
 
   private val jiraRepository = JiraRepository(jiraConfig)
@@ -46,44 +43,38 @@ class TimeTrackingService(
     } yield ()
 
   protected def updateJira(stream: Stream[IO, List[WorklogPayloadWithTicket]]): IO[Unit] =
-    stream.flatMap(Stream.emits(_).covary[IO])
+    stream
+      .flatMap(Stream.emits(_).covary[IO])
       .metered(1.second)
       .flatMap(element => Stream.eval(pushWorklog(element)))
-      .flatTap(tuple =>
-        Stream.eval(logPushResponse(tuple._1, tuple._2))
-      ).compile
+      .flatTap(tuple => Stream.eval(logPushResponse(tuple._1, tuple._2)))
+      .compile
       .drain
 
-  protected def buildNewDatePeriod(
-                                    datePeriod: DatePeriod
-                                  ): DatePeriod =
+  protected def buildNewDatePeriod(datePeriod: DatePeriod): DatePeriod =
     datePeriod.copy(end = datePeriod.end.plusDays(1))
 
   protected def pushWorklog(element: WorklogPayloadWithTicket) =
     for {
       uuid <- IO(UUID.randomString)
       _ <- IO(logger.info(s"UUID - $uuid. Try to push the following element, Element - $element."))
-      response <- jiraRepository
-        .addWorkLog(
-          element.ticketId,
-          element.payload,
-          LeaveEstimate
-        ).attempt.map((uuid, _))
+      response <-
+        jiraRepository
+          .addWorkLog(element.ticketId, element.payload, LeaveEstimate)
+          .attempt
+          .map((uuid, _))
     } yield response
 
   protected def logPushResponse(
-                                 uuid: String,
-                                 result: Either[Throwable, WorkLogCreateResponse]
-                               ): IO[Unit] =
+    uuid: String,
+    result: Either[Throwable, WorkLogCreateResponse]
+  ): IO[Unit] =
     IO(logger.info(s"UUID - $uuid. Result of the operation - $result"))
 }
 
 object TimeTrackingService {
   def apply(
-             meetingService: MeetingService
-           )(
-             implicit contextShift: ContextShift[IO],
-             timer: Timer[IO]
-           ): TimeTrackingService =
+    meetingService: MeetingService
+  )(implicit contextShift: ContextShift[IO], timer: Timer[IO]): TimeTrackingService =
     new TimeTrackingService(meetingService)
 }
