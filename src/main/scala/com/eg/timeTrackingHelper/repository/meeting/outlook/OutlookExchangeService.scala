@@ -5,7 +5,11 @@ import java.net.URI
 import cats.effect.{Async, IO}
 import cats.implicits._
 import com.eg.timeTrackingHelper.model.DatePeriod
-import com.eg.timeTrackingHelper.repository.meeting.outlook.exception.{ServerNotFoundException, UnauthorizedException, UnknownException}
+import com.eg.timeTrackingHelper.repository.meeting.outlook.exception.{
+  ServerNotFoundException,
+  UnauthorizedException,
+  UnknownException
+}
 import com.eg.timeTrackingHelper.utils.DateTimeHelper.LocalDateToDate
 import microsoft.exchange.webservices.data.core.ExchangeService
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion
@@ -16,7 +20,7 @@ import microsoft.exchange.webservices.data.core.service.item.Appointment
 import microsoft.exchange.webservices.data.credential.WebCredentials
 import microsoft.exchange.webservices.data.search.CalendarView
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 private[outlook] trait OutlookExchangeService {
   private val maxItemsReturned = 200
@@ -40,39 +44,37 @@ private[outlook] trait OutlookExchangeService {
 
   private def buildCalendarFolder: IO[CalendarFolder] =
     Async[IO].async(
-      _ (
-        Either.catchNonFatal {
-          CalendarFolder.bind(exchangeService, WellKnownFolderName.Calendar)
-        }.leftMap({
-          case x: ServiceRequestException if x.getMessage.contains("(401)Unauthorized") =>
-            UnauthorizedException(x)
-          case x: ServiceRequestException if x.getMessage.contains("(404)Not Found") =>
-            ServerNotFoundException(x)
-          case throwable: Throwable =>
-            UnknownException(throwable)
-        })
+      _(
+        Either
+          .catchNonFatal {
+            CalendarFolder.bind(exchangeService, WellKnownFolderName.Calendar)
+          }
+          .leftMap({
+            case x: ServiceRequestException if x.getMessage.contains("(401)Unauthorized") =>
+              UnauthorizedException(x)
+            case x: ServiceRequestException if x.getMessage.contains("(404)Not Found") =>
+              ServerNotFoundException(x)
+            case throwable: Throwable =>
+              UnknownException(throwable)
+          })
       )
     )
 
   private def findAppointments(
-                                calendarFolder: CalendarFolder,
-                                datePeriod: DatePeriod
-                              ): IO[List[Appointment]] =
+    calendarFolder: CalendarFolder,
+    datePeriod: DatePeriod
+  ): IO[List[Appointment]] =
     Async[IO].async(
-      _ (
-        Either.catchNonFatal {
-          calendarFolder
-            .findAppointments(buildCalendarView(datePeriod))
-        }.bimap(
-          UnknownException(_),
-          _.getItems.asScala.toList)
+      _(
+        Either
+          .catchNonFatal {
+            calendarFolder
+              .findAppointments(buildCalendarView(datePeriod))
+          }
+          .bimap(UnknownException(_), _.getItems.asScala.toList)
       )
     )
 
   private def buildCalendarView(datePeriod: DatePeriod): CalendarView =
-    new CalendarView(
-      datePeriod.start.toDate,
-      datePeriod.end.toDate,
-      maxItemsReturned
-    )
+    new CalendarView(datePeriod.start.toDate, datePeriod.end.toDate, maxItemsReturned)
 }

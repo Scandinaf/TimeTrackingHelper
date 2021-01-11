@@ -6,13 +6,10 @@ import cats.syntax.either._
 
 trait JsonCodecHelper {
 
-  protected def getRequiredField[A: Decoder](
-                                              json: Option[Json],
-                                              fieldName: String
-                                            ): Result[A] =
+  protected def getRequiredField[A: Decoder](json: Option[Json], fieldName: String): Result[A] =
     json match {
       case Some(value) => value.as[A]
-      case _ => buildMandatoryFieldFailure(fieldName).asLeft
+      case _           => buildMandatoryFieldFailure(fieldName).asLeft
     }
 
   protected def buildMandatoryFieldFailure(fieldName: String): DecodingFailure =

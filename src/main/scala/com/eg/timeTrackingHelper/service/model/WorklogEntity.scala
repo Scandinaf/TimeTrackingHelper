@@ -10,15 +10,12 @@ import com.eg.timeTrackingHelper.service.model.ActivityType.ActivityType
 import scala.concurrent.duration.Duration
 
 case class WorklogEntity(
-                          start: LocalDateTime,
-                          end: LocalDateTime,
-                          ticketId: TicketId,
-                          activityType: ActivityType,
-                          description: Option[String] = None,
-                        ) {
+  start: LocalDateTime,
+  end: LocalDateTime,
+  ticketId: TicketId,
+  activityType: ActivityType,
+  description: Option[String] = None
+) {
   def duration: Duration =
-    Duration(
-      ChronoUnit.MINUTES.between(start, end),
-      TimeUnit.MINUTES
-    )
+    Duration(ChronoUnit.MINUTES.between(start, end), TimeUnit.MINUTES)
 }

@@ -21,23 +21,26 @@ private[codec] trait DatePeriodDecoder extends JsonCodecHelper {
 
   implicit val resDatePeriodDecoder = jsonOf[IO, DatePeriod]
 
-  private def parseLocalDate(
-                              c: HCursor,
-                              fieldName: String
-                            ): Either[DecodingFailure, LocalDate] =
+  private def parseLocalDate(c: HCursor, fieldName: String): Either[DecodingFailure, LocalDate] =
     for {
-      jsonField <- c.downField(fieldName)
-        .focus
-        .fold(
-          buildMandatoryFieldFailure(fieldName).asLeft[Json]
-        )(_.asRight[DecodingFailure])
-      strValue <- jsonField.asString
-        .fold(
-          DecodingFailure(s"The field '$fieldName' must be of string type.", List.empty).asLeft[String]
-        )(_.asRight[DecodingFailure])
-      localDate <- Either.catchNonFatal(LocalDate.parse(strValue)).leftMap(_ => DecodingFailure(
-        s"The '$fieldName' field contains incorrect data. Valid data example - 2019-11-03.",
-        List.empty
-      ))
+      jsonField <-
+        c.downField(fieldName)
+          .focus
+          .fold(buildMandatoryFieldFailure(fieldName).asLeft[Json])(_.asRight[DecodingFailure])
+      strValue <-
+        jsonField.asString
+          .fold(
+            DecodingFailure(s"The field '$fieldName' must be of string type.", List.empty)
+              .asLeft[String]
+          )(_.asRight[DecodingFailure])
+      localDate <-
+        Either
+          .catchNonFatal(LocalDate.parse(strValue))
+          .leftMap(_ =>
+            DecodingFailure(
+              s"The '$fieldName' field contains incorrect data. Valid data example - 2019-11-03.",
+              List.empty
+            )
+          )
     } yield localDate
 }

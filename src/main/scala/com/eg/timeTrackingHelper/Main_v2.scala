@@ -38,26 +38,24 @@ object Main_v2 extends IOApp with StrictLogging {
     (for {
       tokenRef <- Ref.of[IO, Option[String]](None)
       meetingRepository <- IO(OutlookMeetingRepository(tokenRef, http4sBlocker))
-      meetingService <- IO(MeetingService(
-        meetingRepository,
-        ApplicationConfig.applicationSettings.keywordMapping
-      ))
+      meetingService <-
+        IO(MeetingService(meetingRepository, ApplicationConfig.applicationSettings.keywordMapping))
       timeTrackingService <- IO(TimeTrackingService(meetingService))
       serverSettings <- IO(ApplicationConfig.serverSettings)
-      timeTrackingHelperRoutes <- IO(TimeTrackingHelperRoutes(tokenRef, resourceBlocker, timeTrackingService))
-      webServerFiber <- BlazeServerBuilder[IO](global)
-        .bindHttp(serverSettings.port, serverSettings.host)
-        .withHttpApp(timeTrackingHelperRoutes.routes.orNotFound)
-        .resource
-        .use(_ => IO.never)
-        .start
+      timeTrackingHelperRoutes <-
+        IO(TimeTrackingHelperRoutes(tokenRef, resourceBlocker, timeTrackingService))
       _ <- IO.sleep(5.second) *> openBrowser(serverSettings)
-      _ <- webServerFiber.join
+      _ <-
+        BlazeServerBuilder[IO](global)
+          .bindHttp(serverSettings.port, serverSettings.host)
+          .withHttpApp(timeTrackingHelperRoutes.routes.orNotFound)
+          .serve
+          .compile
+          .drain
+          .as(ExitCode.Success)
     } yield ExitCode.Success).handleErrorWith(throwable =>
-      IO(logger.error(
-        "The application couldn't be completed correctly",
-        throwable
-      )) *> IO.pure(ExitCode.Error)
+      IO(logger.error("The application couldn't be completed correctly", throwable)) *> IO
+        .pure(ExitCode.Error)
     )
 
   private def openBrowser(serverSettings: ServerSettings): IO[Unit] =

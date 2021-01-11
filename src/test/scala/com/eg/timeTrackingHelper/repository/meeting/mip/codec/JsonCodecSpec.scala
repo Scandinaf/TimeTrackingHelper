@@ -1,6 +1,6 @@
 package com.eg.timeTrackingHelper.repository.meeting.mip.codec
 
-import java.time.{Instant, LocalDateTime}
+import java.time.LocalDateTime
 
 import com.eg.timeTrackingHelper.repository.meeting.model.Meeting
 import io.circe.parser._
@@ -11,17 +11,16 @@ import com.eg.timeTrackingHelper.repository.meeting.mip.codec.JsonCodec._
 
 import scala.concurrent.duration._
 
-class JsonCodecSpec extends AnyFlatSpec
-  with Matchers
-  with EitherValues {
+class JsonCodecSpec extends AnyFlatSpec with Matchers with EitherValues {
 
   "JsonCodec" should "correctly parse json to meeting entities" in {
-    val json = parse(loadResource("decoder/MIPMeetings.json")).right.value
-    val meetings = json.as[List[Meeting]].right.value
+    val json = parse(loadResource("decoder/MIPMeetings.json")).value
+    val meetings = json.as[List[Meeting]].value
 
     meetings.size shouldBe 4
 
-    val meeting1 = meetings.find(_.subject == Option("Extension of employment agreement | Siarhei Barouski")).get
+    val meeting1 =
+      meetings.find(_.subject == Option("Extension of employment agreement | Siarhei Barouski")).get
     meeting1.isTakePlace shouldBe true
     meeting1.duration shouldBe 30.minutes
     meeting1.start shouldBe LocalDateTime.parse("2020-05-25T12:30")
@@ -39,7 +38,8 @@ class JsonCodecSpec extends AnyFlatSpec
     meeting3.start shouldBe LocalDateTime.parse("2020-05-25T10:30")
     meeting3.end shouldBe LocalDateTime.parse("2020-05-25T11:00")
 
-    val meeting4 = meetings.find(_.subject == Option("INT planning/actualities/grooming; server side LOW")).get
+    val meeting4 =
+      meetings.find(_.subject == Option("INT planning/actualities/grooming; server side LOW")).get
     meeting4.isTakePlace shouldBe true
     meeting4.duration shouldBe 45.minutes
     meeting4.start shouldBe LocalDateTime.parse("2020-05-25T15:45")

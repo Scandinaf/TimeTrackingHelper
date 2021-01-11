@@ -16,53 +16,42 @@ private[ticket] trait MergeStrategyHelper {
 
   protected def majorTicketStatuses: Set[TicketStatus]
 
-  protected implicit class TicketStateCompanion(
-                                                 ticketState: TicketState
-                                               ) {
+  protected implicit class TicketStateCompanion(ticketState: TicketState) {
     def merge(
-               getWorklogEntities: LocalDateTime => List[WorklogEntity],
-               newStatus: Option[TicketStatus] = None,
-               newAssignee: Option[Assignee] = None,
-             )(
-               implicit created: String
-             ): Either[Throwable, TicketState] =
+      getWorklogEntities: LocalDateTime => List[WorklogEntity],
+      newStatus: Option[TicketStatus] = None,
+      newAssignee: Option[Assignee] = None
+    )(implicit created: String): Either[Throwable, TicketState] =
       created.toLDT.map { created =>
         ticketState.copy(
           assignee = newAssignee.orElse(ticketState.assignee),
           status = newStatus.orElse(ticketState.status),
-          worklogEntities = getWorklogEntities(created),
+          worklogEntities = getWorklogEntities(created)
         )
       }
   }
 
-  protected implicit class WorklogEntitiesCompanion(
-                                                     worklogEntities: List[WorklogEntity]
-                                                   ) {
-    def update(
-                end: LocalDateTime,
-              ): List[WorklogEntity] =
+  protected implicit class WorklogEntitiesCompanion(worklogEntities: List[WorklogEntity]) {
+    def update(end: LocalDateTime): List[WorklogEntity] =
       worklogEntities.init :+
-        worklogEntities
-          .last
+        worklogEntities.last
           .copy(end = end)
 
     def add(
-             start: LocalDateTime,
-             ticketId: TicketId,
-             activityType: ActivityType
-           ): List[WorklogEntity] =
+      start: LocalDateTime,
+      ticketId: TicketId,
+      activityType: ActivityType
+    ): List[WorklogEntity] =
       worklogEntities :+
         WorklogEntity(
           start = start,
           end = defaultEnd,
           ticketId = ticketId,
-          activityType = activityType,
+          activityType = activityType
         )
   }
 
-  protected def getActivityType(
-                                 status: TicketStatus
-                               ): ActivityType =
+  protected def getActivityType(status: TicketStatus): ActivityType =
     if (majorTicketStatuses.contains(status))
       ActivityType.Major
     else

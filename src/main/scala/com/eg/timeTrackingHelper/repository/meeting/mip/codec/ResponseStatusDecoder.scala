@@ -21,13 +21,14 @@ private[codec] trait ResponseStatusDecoder {
 
   implicit val responseStatusDecoder: Decoder[ResponseStatus] = (c: HCursor) => {
     c.as[String].map(_.toLowerCase.trim).flatMap {
-      case "none" => None.asRight
-      case "organizer" => Organizer.asRight
+      case "none"                => None.asRight
+      case "organizer"           => Organizer.asRight
       case "tentativelyaccepted" => TentativelyAccepted.asRight
-      case "accepted" => Accepted.asRight
-      case "declined" => Declined.asRight
-      case "notresponded" => NotResponded.asRight
-      case value => DecodingFailure(s"Nothing is known about the next type - $value.", List.empty).asLeft
+      case "accepted"            => Accepted.asRight
+      case "declined"            => Declined.asRight
+      case "notresponded"        => NotResponded.asRight
+      case value =>
+        DecodingFailure(s"Nothing is known about the next type - $value.", List.empty).asLeft
     }
   }
 }

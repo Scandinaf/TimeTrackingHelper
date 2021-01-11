@@ -20,24 +20,26 @@ object Converter extends StrictLogging {
 
   implicit val appointmentToMeeting = new Converter[Appointment, Meeting] {
     override def convert(a: Appointment): Either[ConvertException, Meeting] =
-      Either.catchNonFatal {
-        model.Meeting(
-          convertSubject(a.getSubject),
-          isTakePlace(a),
-          a.getStart.toLocalDateTime,
-          a.getEnd.toLocalDateTime,
-          Duration(a.getDuration.getTotalMinutes, TimeUnit.MINUTES)
-        )
-      }.leftMap(throwable => {
-        logger.error(
-          s"""Unexpected behavior, an error occurred during the conversion.
+      Either
+        .catchNonFatal {
+          model.Meeting(
+            convertSubject(a.getSubject),
+            isTakePlace(a),
+            a.getStart.toLocalDateTime,
+            a.getEnd.toLocalDateTime,
+            Duration(a.getDuration.getTotalMinutes, TimeUnit.MINUTES)
+          )
+        }
+        .leftMap(throwable => {
+          logger.error(
+            s"""Unexpected behavior, an error occurred during the conversion.
              | Appointment : {subject : ${a.getSubject},
              |  startDate : ${a.getStart},
              |   endDate : ${a.getEnd}}.""".stripMargin,
-          throwable
-        )
-        UnexpectableBehaviourException(throwable)
-      })
+            throwable
+          )
+          UnexpectableBehaviourException(throwable)
+        })
 
     private def convertSubject(subject: String): Option[String] =
       if (subject.isBlank) None else subject.some

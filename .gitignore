@@ -1,4 +1,8 @@
+.bloop
+.bsp
 .idea
+.metals
+.vscode
 /bootstrap/data
 /bootstrap/tmp
 /classes/
@@ -7,10 +11,10 @@
 /test-build/
 /test-output/
 /test-report/
-/target/
+target/
 /logs
-/*/target/
-/*/*/target/
+
+metals.sbt
 
 temp-testng-customsuite.xml
 

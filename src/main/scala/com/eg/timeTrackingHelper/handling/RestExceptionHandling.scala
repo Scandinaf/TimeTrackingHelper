@@ -14,12 +14,11 @@ trait RestExceptionHandling extends ExceptionHandling[Response[IO]] {
     exception match {
       case e: ValidationException => BadRequest(e.show)
       case _: AccessTokenEmptyException =>
-        BadRequest(
-          """There is no point in continuing because the token hasn't been installed.
+        BadRequest("""There is no point in continuing because the token hasn't been installed.
             |Please visit the next page 'GET /timeTrackingHelper/token'.""".stripMargin)
       case InvalidMessageBodyFailure(_, Some(DecodingFailure(message, _))) => BadRequest(message)
-      case InvalidMessageBodyFailure(details, _) => BadRequest(details)
-      case MalformedMessageBodyFailure(details, _) => BadRequest(details)
-      case _ => InternalServerError("You mustn't see this, please report about problem.")
+      case InvalidMessageBodyFailure(details, _)                           => BadRequest(details)
+      case MalformedMessageBodyFailure(details, _)                         => BadRequest(details)
+      case _                                                               => InternalServerError("You mustn't see this, please report about problem.")
     }
 }

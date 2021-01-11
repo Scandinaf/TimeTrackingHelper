@@ -28,17 +28,14 @@ object Main extends IOApp with StrictLogging with ConsoleExceptionHandling {
     (for {
       datePeriod <- contextShift.blockOn(blocker)(getDatePeriod)
       meetingRepository <- IO(OutlookMeetingRepository(ApplicationConfig.outlookConfig))
-      meetingService <- IO(MeetingService(
-        meetingRepository,
-        ApplicationConfig.applicationSettings.keywordMapping
-      ))
+      meetingService <-
+        IO(MeetingService(meetingRepository, ApplicationConfig.applicationSettings.keywordMapping))
       _ <- TimeTrackingService(meetingService).logTime(datePeriod)
     } yield ExitCode.Success)
       .handleErrorWith(throwable =>
-        IO(logger.error(
-          "The application couldn't be completed correctly",
+        IO(logger.error("The application couldn't be completed correctly", throwable)) *> handle(
           throwable
-        )) *> handle(throwable).map(_ => ExitCode.Error)
+        ).map(_ => ExitCode.Error)
       )
   }
 
