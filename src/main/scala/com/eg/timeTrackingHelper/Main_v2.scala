@@ -18,7 +18,6 @@ import org.http4s.server.blaze.BlazeServerBuilder
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.global
-import scala.concurrent.duration._
 
 object Main_v2 extends IOApp with StrictLogging {
 
@@ -44,18 +43,15 @@ object Main_v2 extends IOApp with StrictLogging {
       serverSettings <- IO(ApplicationConfig.serverSettings)
       timeTrackingHelperRoutes <-
         IO(TimeTrackingHelperRoutes(tokenRef, resourceBlocker, timeTrackingService))
-      _ <- IO.sleep(5.second) *> openBrowser(serverSettings)
-      _ <-
-        BlazeServerBuilder[IO](global)
-          .bindHttp(serverSettings.port, serverSettings.host)
-          .withHttpApp(timeTrackingHelperRoutes.routes.orNotFound)
-          .serve
-          .compile
-          .drain
-          .as(ExitCode.Success)
+      _ <- BlazeServerBuilder[IO](global)
+        .bindHttp(serverSettings.port, serverSettings.host)
+        .withHttpApp(timeTrackingHelperRoutes.routes.orNotFound)
+        .resource
+        .use(_ => openBrowser(serverSettings) *> IO.never)
+        .void
     } yield ExitCode.Success).handleErrorWith(throwable =>
-      IO(logger.error("The application couldn't be completed correctly", throwable)) *> IO
-        .pure(ExitCode.Error)
+      IO(logger.error("The application couldn't be completed correctly", throwable)) *>
+        IO.pure(ExitCode.Error)
     )
 
   private def openBrowser(serverSettings: ServerSettings): IO[Unit] =
